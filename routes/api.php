@@ -19,4 +19,5 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 Route::get('/data/getUser', [DataController::class, 'getUser']);
+Route::post('/data/addUser', [DataController::class, 'addUser']);
 Route::post('/data/deleteUser', [DataController::class, 'deleteUser']);
