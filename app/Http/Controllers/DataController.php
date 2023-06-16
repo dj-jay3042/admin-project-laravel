@@ -1,7 +1,5 @@
 <?php
 
-// app/Http/Controllers/DataController.php
-
 namespace App\Http\Controllers;
 
 use App\Models\Data;
