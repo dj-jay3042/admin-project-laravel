@@ -8,14 +8,25 @@ use Illuminate\Support\Facades\DB;
 
 class DataController extends Controller
 {
+    public function getColumns()
+    {
+        $columnNames = DB::select("SELECT COLUMN_NAME
+            FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_NAME = 'tblUser'
+            ORDER BY ORDINAL_POSITION");
+        $columnNames = array_column($columnNames, 'COLUMN_NAME');
+        return response()->json($columnNames);
+    }
+
     public function getUser()
     {
-        $data = Data::all();
+        $data = Data::orderBy('id', 'desc')->get();
 
         return response()->json($data);
     }
 
-    public function addUser(Request $request) {
+    public function addUser(Request $request)
+    {
         $data = [
             'username' => $request->input("username"),
             'password' => $request->input("password"),
@@ -24,13 +35,29 @@ class DataController extends Controller
         return DB::table('tblUser')->insert($data);
     }
 
-    public function updateUser() {
-
+    public function updateUser(Request $request)
+    {
+        $data = [
+            'id' => $request->input('id'),
+            'username' => $request->input("username"),
+            'password' => $request->input("password"),
+            'usertype' => $request->input("usertype"),
+        ];
+        $user = Data::find($data['id']);
+        $user->username = $data["username"];
+        $user->password = $data["password"];
+        $user->usertype = $data["usertype"];
+        $user->save();
     }
 
-    public function deleteUser(Request $request) {
+    public function deleteUser(Request $request)
+    {
         $id = $request->input("id");
         $user = Data::find($id);
         return $user->delete();
+    }
+
+    public function createPDF(Request $request)
+    {
     }
 }

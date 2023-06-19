@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+Route::get('/data/getColumns', [DataController::class, 'getColumns']);
 Route::get('/data/getUser', [DataController::class, 'getUser']);
 Route::post('/data/addUser', [DataController::class, 'addUser']);
 Route::post('/data/deleteUser', [DataController::class, 'deleteUser']);
