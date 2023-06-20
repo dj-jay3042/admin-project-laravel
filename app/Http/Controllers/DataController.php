@@ -76,8 +76,20 @@ class DataController extends Controller
             'results' => $query,
             'fields' => $fields,
         ];
-        
-        $pdf = SnappyPdf::loadView('pdf.table', compact('data'));
-        return $pdf->download('table.pdf');
+
+        $pdf = SnappyPdf::loadView('pdf', compact('data'));
+
+        $pdf->setOption('encoding', 'utf-8');
+        $pdf->setOption('page-size', 'A4');
+        $pdf->setOption('margin-top', 10);
+        $pdf->setOption('margin-right', 10);
+        $pdf->setOption('margin-bottom', 10);
+        $pdf->setOption('margin-left', 10);
+
+        $pdf->setOption('footer-center', 'Page [page] of [topage]');
+
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, 'pdf-file.pdf');
     }
 }
