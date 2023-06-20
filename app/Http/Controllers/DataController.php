@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Data;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\Snappy\Facades\SnappyPdf;
 
 class DataController extends Controller
 {
@@ -59,5 +60,24 @@ class DataController extends Controller
 
     public function createPDF(Request $request)
     {
+        $fltrType = $request->input('fitrType');
+        $fltrVal = $request->input('fltrVal');
+        $ids = $request->input('ids');
+        $fields = $request->input('fields');
+        // array_unshift($fields, 'id');
+
+        $query = DB::table('tblUser')
+            ->whereIn('id', $ids)
+            ->where($fltrType, $fltrVal)
+            ->select($fields)
+            ->get();
+
+        $data = [
+            'results' => $query,
+            'fields' => $fields,
+        ];
+        
+        $pdf = SnappyPdf::loadView('pdf.table', compact('data'));
+        return $pdf->download('table.pdf');
     }
 }
