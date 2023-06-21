@@ -23,3 +23,5 @@ Route::get('/data/getUser', [DataController::class, 'getUser']);
 Route::post('/data/addUser', [DataController::class, 'addUser']);
 Route::post('/data/deleteUser', [DataController::class, 'deleteUser']);
 Route::get('/data/createPDF', [DataController::class, 'createPDF']);
+Route::get('/data/createExcel', [DataController::class, 'createExcel']);
+Route::get('/data/createCSV', [DataController::class, 'createCSV']);
