@@ -22,4 +22,4 @@ Route::get('/data/getColumns', [DataController::class, 'getColumns']);
 Route::get('/data/getUser', [DataController::class, 'getUser']);
 Route::post('/data/addUser', [DataController::class, 'addUser']);
 Route::post('/data/deleteUser', [DataController::class, 'deleteUser']);
-Route::post('/data/createPDF', [DataController::class, 'createPDF']);
+Route::get('/data/createPDF', [DataController::class, 'createPDF']);

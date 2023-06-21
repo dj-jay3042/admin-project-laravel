@@ -60,36 +60,29 @@ class DataController extends Controller
 
     public function createPDF(Request $request)
     {
-        $fltrType = $request->input('fitrType');
-        $fltrVal = $request->input('fltrVal');
-        $ids = $request->input('ids');
-        $fields = $request->input('fields');
-        // array_unshift($fields, 'id');
+        $fltrType = $request->query('fltrType');
+        $fltrVal = $request->query('fltrVal');
+        $fields = $request->query('fields');
+        $ids = $request->query('ids');
 
-        $query = DB::table('tblUser')
-            ->whereIn('id', $ids)
-            ->where($fltrType, $fltrVal)
+        array_unshift($fields, 'id');
+
+        $filter = [];
+        for ($i = 0; $i < count($fltrType); $i++) {
+            $filter[$fltrType[$i]] = $fltrVal[$i];
+        }
+
+        $query = DB::table('tblUser')->whereIn('id', $ids)
+            ->where($filter)
             ->select($fields)
             ->get();
-
+            
         $data = [
             'results' => $query,
             'fields' => $fields,
         ];
 
         $pdf = SnappyPdf::loadView('pdf', compact('data'));
-
-        $pdf->setOption('encoding', 'utf-8');
-        $pdf->setOption('page-size', 'A4');
-        $pdf->setOption('margin-top', 10);
-        $pdf->setOption('margin-right', 10);
-        $pdf->setOption('margin-bottom', 10);
-        $pdf->setOption('margin-left', 10);
-
-        $pdf->setOption('footer-center', 'Page [page] of [topage]');
-
-        return response()->streamDownload(function () use ($pdf) {
-            echo $pdf->output();
-        }, 'pdf-file.pdf');
+        return $pdf->download('pdf-file.pdf');
     }
 }
