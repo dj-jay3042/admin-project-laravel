@@ -40,17 +40,14 @@ class DataController extends Controller
 
     public function updateUser(Request $request)
     {
-        $data = [
-            'id' => $request->input('id'),
-            'username' => $request->input("username"),
-            'password' => $request->input("password"),
-            'usertype' => $request->input("usertype"),
-        ];
-        $user = Data::find($data['id']);
-        $user->username = $data["username"];
-        $user->password = $data["password"];
-        $user->usertype = $data["usertype"];
-        $user->save();
+        $id = $request->input('id');
+        $data = $request->input('data');
+        $qry = "";
+        foreach ($data as $key => $value) {
+            $qry .= $key . "=" . "'" . $value . "',";
+        }
+        $qry = substr($qry, 0, -1);
+        $user = DB::update("UPDATE tblUser set " . $qry . " WHERE id = " . $id);
     }
 
     public function deleteUser(Request $request)
