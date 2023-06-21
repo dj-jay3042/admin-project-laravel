@@ -150,16 +150,18 @@ class DataController extends Controller
         $fltrType = $request->query('fltrType');
         $fltrVal = $request->query('fltrVal');
 
-        $filter = [];
-        for ($i = 0; $i < count($fltrType); $i++) {
-            $filter[$i] = [$fltrType[$i], 'LIKE', $fltrVal[$i]];
+        if (count($fltrType) >= count($fltrVal)) {
+            $filter = [];
+            for ($i = 0; $i < count($fltrType); $i++) {
+                $filter[$i] = [$fltrType[$i], 'LIKE', $fltrVal[$i]];
+            }
+
+            $data = DB::table('tblUser')->where($filter)
+                ->select()
+                ->get();
+
+            return response()->json($data);
         }
-
-        $data = DB::table('tblUser')->where($filter)
-            ->select()
-            ->get();
-
-        return response()->json($data);
     }
 
     public function createCSV(Request $request)
