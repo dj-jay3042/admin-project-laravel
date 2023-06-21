@@ -26,3 +26,4 @@ Route::post('/data/updateUser', [DataController::class, 'updateUser']);
 Route::get('/data/createPDF', [DataController::class, 'createPDF']);
 Route::get('/data/createExcel', [DataController::class, 'createExcel']);
 Route::get('/data/createCSV', [DataController::class, 'createCSV']);
+Route::get('/data/applyFilter', [DataController::class, 'applyFilter']);

@@ -73,7 +73,7 @@ class DataController extends Controller
         } else {
             $filter = [];
             for ($i = 0; $i < count($fltrType); $i++) {
-                $filter[$fltrType[$i]] = $fltrVal[$i];
+                $filter[$i] = [$fltrType[$i], 'LIKE', $fltrVal[$i]];
             }
 
             $query = DB::table('tblUser')->whereIn('id', $ids)
@@ -107,7 +107,7 @@ class DataController extends Controller
         } else {
             $filter = [];
             for ($i = 0; $i < count($fltrType); $i++) {
-                $filter[$fltrType[$i]] = $fltrVal[$i];
+                $filter[$i] = [$fltrType[$i], 'LIKE', $fltrVal[$i]];
             }
 
             $data = DB::table('tblUser')->whereIn('id', $ids)
@@ -145,6 +145,23 @@ class DataController extends Controller
         return response()->download('data.xlsx')->deleteFileAfterSend(true);
     }
 
+    public function applyFilter(Request $request)
+    {
+        $fltrType = $request->query('fltrType');
+        $fltrVal = $request->query('fltrVal');
+
+        $filter = [];
+        for ($i = 0; $i < count($fltrType); $i++) {
+            $filter[$i] = [$fltrType[$i], 'LIKE', $fltrVal[$i]];
+        }
+
+        $data = DB::table('tblUser')->where($filter)
+            ->select()
+            ->get();
+
+        return response()->json($data);
+    }
+
     public function createCSV(Request $request)
     {
         $fltrType = $request->query('fltrType');
@@ -161,7 +178,7 @@ class DataController extends Controller
         } else {
             $filter = [];
             for ($i = 0; $i < count($fltrType); $i++) {
-                $filter[$fltrType[$i]] = $fltrVal[$i];
+                $filter[$i] = [$fltrType[$i], 'LIKE', $fltrVal[$i]];
             }
 
             $data = DB::table('tblUser')->whereIn('id', $ids)
