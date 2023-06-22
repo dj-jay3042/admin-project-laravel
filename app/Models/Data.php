@@ -7,5 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Data extends Model
 {
     protected $table = "tblUser";
-    protected $primaryKey = 'id';
+    protected $primaryKey = "id";
+
+    public function getKey() { return $this->primaryKey; }
 }

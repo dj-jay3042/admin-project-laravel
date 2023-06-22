@@ -11,6 +11,12 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class DataController extends Controller
 {
+    protected $pk;
+
+    public function __construct(Data $data) {
+        $this->pk = $data->getKey();
+    }
+
     public function getColumns()
     {
         $columnNames = DB::select("SELECT COLUMN_NAME
@@ -23,7 +29,7 @@ class DataController extends Controller
 
     public function getUser()
     {
-        $data = Data::orderBy('id', 'desc')->get();
+        $data = Data::all();
 
         return response()->json($data);
     }
@@ -47,7 +53,7 @@ class DataController extends Controller
             $qry .= $key . "=" . "'" . $value . "',";
         }
         $qry = substr($qry, 0, -1);
-        $user = DB::update("UPDATE tblUser set " . $qry . " WHERE id = " . $id);
+        $user = DB::update("UPDATE tblUser set " . $qry . " WHERE " . $this->pk . " = " . $id);
     }
 
     public function deleteUser(Request $request)
@@ -64,22 +70,46 @@ class DataController extends Controller
         $fields = $request->query('fields');
         $ids = $request->query('ids');
 
-        array_unshift($fields, 'id');
+        array_unshift($fields, $this->pk->getKey());
 
         if ($fltrType == null || $fltrVal == null) {
-            $query = DB::table('tblUser')->whereIn('id', $ids)
+            $query = DB::table('tblUser')->whereIn($this->pk, $ids)
                 ->select($fields)
                 ->get();
         } else {
-            $filter = [];
-            for ($i = 0; $i < count($fltrType); $i++) {
-                $filter[$i] = [$fltrType[$i], 'LIKE', $fltrVal[$i]];
-            }
+            if (count($fltrType) >= count($fltrVal)) {
+                $filter = [];
+                for ($i = 0; $i < count($fltrType); $i++) {
+                    $filter[$i] = [$fltrType[$i], 'LIKE', $fltrVal[$i]];
+                }
 
-            $query = DB::table('tblUser')->whereIn('id', $ids)
-                ->where($filter)
-                ->select($fields)
-                ->get();
+                $query = DB::table('tblUser')->where($filter)
+                    ->select()
+                    ->get();
+            } else {
+                $filter1 = [];
+                $filter2 = [];
+                $count = 0;
+                while ($count < count($fltrType)) {
+                    $filter1[$count] = $fltrType[$count] . " LIKE '" . $fltrVal[$count] . "'";
+                    $count++;
+                }
+
+                $index = 0;
+                $columnNames = DB::select("SELECT COLUMN_NAME
+                    FROM INFORMATION_SCHEMA.COLUMNS
+                    WHERE TABLE_NAME = 'tblUser'
+                    ORDER BY ORDINAL_POSITION");
+                $fld = array_column($columnNames, 'COLUMN_NAME');
+                for ($i = $count; $i < count($fltrVal); $i++) {
+                    for ($j = 0; $j < 4; $j++) {
+                        $filter2[$index] = $fld[$j] . " LIKE '" . $fltrVal[$i] . "'";
+                        $index++;
+                    }
+                }
+                $qry = "SELECT * FROM tblUser WHERE " . implode(" AND ", $filter1) . " AND (" . implode(" OR ", $filter2) . ")";
+                $query = DB::select($qry);
+            }
         }
 
         $data = [
@@ -101,19 +131,43 @@ class DataController extends Controller
         array_unshift($fields, 'id');
 
         if ($fltrType == null || $fltrVal == null) {
-            $data = DB::table('tblUser')->whereIn('id', $ids)
+            $data = DB::table('tblUser')->whereIn($this->pk, $ids)
                 ->select($fields)
                 ->get();
         } else {
-            $filter = [];
-            for ($i = 0; $i < count($fltrType); $i++) {
-                $filter[$i] = [$fltrType[$i], 'LIKE', $fltrVal[$i]];
-            }
+            if (count($fltrType) >= count($fltrVal)) {
+                $filter = [];
+                for ($i = 0; $i < count($fltrType); $i++) {
+                    $filter[$i] = [$fltrType[$i], 'LIKE', $fltrVal[$i]];
+                }
 
-            $data = DB::table('tblUser')->whereIn('id', $ids)
-                ->where($filter)
-                ->select($fields)
-                ->get();
+                $data = DB::table('tblUser')->where($filter)
+                    ->select()
+                    ->get();
+            } else {
+                $filter1 = [];
+                $filter2 = [];
+                $count = 0;
+                while ($count < count($fltrType)) {
+                    $filter1[$count] = $fltrType[$count] . " LIKE '" . $fltrVal[$count] . "'";
+                    $count++;
+                }
+
+                $index = 0;
+                $columnNames = DB::select("SELECT COLUMN_NAME
+                    FROM INFORMATION_SCHEMA.COLUMNS
+                    WHERE TABLE_NAME = 'tblUser'
+                    ORDER BY ORDINAL_POSITION");
+                $fld = array_column($columnNames, 'COLUMN_NAME');
+                for ($i = $count; $i < count($fltrVal); $i++) {
+                    for ($j = 0; $j < 4; $j++) {
+                        $filter2[$index] = $fld[$j] . " LIKE '" . $fltrVal[$i] . "'";
+                        $index++;
+                    }
+                }
+                $qry = "SELECT * FROM tblUser WHERE " . implode(" AND ", $filter1) . " AND (" . implode(" OR ", $filter2) . ")";
+                $data = DB::select($qry);
+            }
         }
 
         $spreadsheet = new Spreadsheet();
@@ -161,6 +215,31 @@ class DataController extends Controller
                 ->get();
 
             return response()->json($data);
+        } else {
+            $filter1 = [];
+            $filter2 = [];
+            $count = 0;
+            while ($count < count($fltrType)) {
+                $filter1[$count] = $fltrType[$count] . " LIKE '" . $fltrVal[$count] . "'";
+                $count++;
+            }
+
+            $index = 0;
+            $columnNames = DB::select("SELECT COLUMN_NAME
+            FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_NAME = 'tblUser'
+            ORDER BY ORDINAL_POSITION");
+            $fld = array_column($columnNames, 'COLUMN_NAME');
+            for ($i = $count; $i < count($fltrVal); $i++) {
+                for ($j = 0; $j < 4; $j++) {
+                    $filter2[$index] = $fld[$j] . " LIKE '" . $fltrVal[$i] . "'";
+                    $index++;
+                }
+            }
+            $qry = "SELECT * FROM tblUser WHERE " . implode(" AND ", $filter1) . " AND (" . implode(" OR ", $filter2) . ")";
+            $data = DB::select($qry);
+
+            return response()->json($data);
         }
     }
 
@@ -174,19 +253,43 @@ class DataController extends Controller
         array_unshift($fields, 'id');
 
         if ($fltrType == null || $fltrVal == null) {
-            $data = DB::table('tblUser')->whereIn('id', $ids)
+            $data = DB::table('tblUser')->whereIn($this->pk, $ids)
                 ->select($fields)
                 ->get();
         } else {
-            $filter = [];
-            for ($i = 0; $i < count($fltrType); $i++) {
-                $filter[$i] = [$fltrType[$i], 'LIKE', $fltrVal[$i]];
-            }
+            if (count($fltrType) >= count($fltrVal)) {
+                $filter = [];
+                for ($i = 0; $i < count($fltrType); $i++) {
+                    $filter[$i] = [$fltrType[$i], 'LIKE', $fltrVal[$i]];
+                }
 
-            $data = DB::table('tblUser')->whereIn('id', $ids)
-                ->where($filter)
-                ->select($fields)
-                ->get();
+                $data = DB::table('tblUser')->where($filter)
+                    ->select()
+                    ->get();
+            } else {
+                $filter1 = [];
+                $filter2 = [];
+                $count = 0;
+                while ($count < count($fltrType)) {
+                    $filter1[$count] = $fltrType[$count] . " LIKE '" . $fltrVal[$count] . "'";
+                    $count++;
+                }
+
+                $index = 0;
+                $columnNames = DB::select("SELECT COLUMN_NAME
+                    FROM INFORMATION_SCHEMA.COLUMNS
+                    WHERE TABLE_NAME = 'tblUser'
+                    ORDER BY ORDINAL_POSITION");
+                $fld = array_column($columnNames, 'COLUMN_NAME');
+                for ($i = $count; $i < count($fltrVal); $i++) {
+                    for ($j = 0; $j < 4; $j++) {
+                        $filter2[$index] = $fld[$j] . " LIKE '" . $fltrVal[$i] . "'";
+                        $index++;
+                    }
+                }
+                $qry = "SELECT * FROM tblUser WHERE " . implode(" AND ", $filter1) . " AND (" . implode(" OR ", $filter2) . ")";
+                $data = DB::select($qry);
+            }
         }
         $csvContent = implode(',', array_keys((array) $data[0])) . "\n"; // Headers
 
